@@ -1,1 +1,548 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
 
+    content="width=device-width, initial-scale=1.0">
+    <title>WebGIS Deforestasi Ketapang</title>
+	
+    <!-- LEAFLET -->
+    <link rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+    <!-- FONT AWESOME -->
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+    <!-- CHART -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:Arial, Helvetica, sans-serif;
+        }
+        body{
+            background:#f4f6f9;
+        }
+
+        /* ===================================== */
+        /* HEADER */
+        /* ===================================== */
+        header{
+            background:#1b4332;
+            color:white;
+            padding:18px 30px;
+        }
+        header h1{
+            font-size:28px;
+        }
+        header p{
+            margin-top:5px;
+            font-size:14px;
+        }
+		
+        /* ===================================== */
+        /* CONTAINER */
+        /* ===================================== */
+        .container{
+            display:flex;
+            height:calc(100vh - 85px);
+        }
+		
+        /* ===================================== */
+        /* SIDEBAR */
+        /* ===================================== */
+        .sidebar{
+            width:350px;
+            background:white;
+            padding:20px;
+            overflow-y:auto;
+            box-shadow:2px 0 10px rgba(0,0,0,0.1);
+            z-index:1000;
+        }
+        .card{
+            background:white;
+            border-radius:12px;
+            padding:18px;
+            margin-bottom:20px;
+            box-shadow:0 2px 8px rgba(0,0,0,0.1);
+        }
+        .card h2{
+            margin-bottom:15px;
+            color:#1b4332;
+        }
+
+        /* ===================================== */
+        /* MAP */
+        /* ===================================== */
+        #map{
+            flex:1;
+        }
+		
+        /* ===================================== */
+        /* LAYER ITEM */
+        /* ===================================== */
+        .layer-item{
+            margin-bottom:12px;
+            display:flex;
+            align-items:center;
+        }
+        .layer-item input{
+            margin-right:10px;
+        }
+
+        /* ===================================== */
+        /* LEGENDA */
+        /* ===================================== */
+        .legend-item{
+            display:flex;
+            align-items:center;
+            margin-bottom:12px;
+        }
+        .color{
+            width:20px;
+            height:20px;
+            border-radius:4px;
+            margin-right:10px;
+            background:#fd8d3c;
+        }
+        .line-legend{
+            width:25px;
+            height:0;
+            border:2px solid black;
+            margin-right:10px;
+        }
+		
+        /* ===================================== */
+        /* INFO BOX */
+        /* ===================================== */
+        #infoBox{
+            background:#f8f9fa;
+            padding:15px;
+            border-left:5px solid #1b4332;
+            border-radius:8px;
+        }
+        #infoBox h3{
+            margin-bottom:10px;
+        }
+        #infoBox p{
+            margin-bottom:8px;
+            line-height:1.5;
+        }
+		
+        /* ===================================== */
+        /* KOORDINAT */
+        /* ===================================== */
+        .koordinat{
+            background:white;
+            padding:10px;
+            border-radius:8px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.2);
+            font-size:13px;
+        }
+    </style>
+</head>
+<body>
+    <!-- ===================================== -->
+    <!-- HEADER -->
+    <!-- ===================================== -->
+    <header>
+        <h1>WebGIS Deforestasi Kabupaten Ketapang</h1>
+        <p>
+            Muhammad Raihan Fadhilah |
+            24/539466/SV/24606
+        </p>
+    </header>
+
+    <!-- ===================================== -->
+    <!-- CONTAINER -->
+    <!-- ===================================== -->
+    <div class="container">
+
+        <!-- ===================================== -->
+        <!-- SIDEBAR -->
+        <!-- ===================================== -->
+        <div class="sidebar">
+		
+            <!-- LAYER -->
+            <div class="card">
+                <h2>
+                    <i class="fa-solid fa-layer-group"></i>
+                    Layer Deforestasi
+                </h2>
+                <div class="layer-item">
+                    <input type="radio"
+                    name="lossyear"
+                    onclick="showLayer('2021')">
+                    <label>Deforestasi 2021</label>
+                </div>
+                <div class="layer-item">
+                    <input type="radio"
+                    name="lossyear"
+                    onclick="showLayer('2022')">
+                    <label>Deforestasi 2022</label>
+                </div>
+                <div class="layer-item">
+                    <input type="radio"
+                    name="lossyear"
+                    onclick="showLayer('2023')">
+                    <label>Deforestasi 2023</label>
+                </div>
+                <div class="layer-item">
+                    <input type="radio"
+                    name="lossyear"
+                    onclick="showLayer('2024')">
+                    <label>Deforestasi 2024</label>
+                </div>
+                <div class="layer-item">
+                    <input type="radio"
+                    name="lossyear"
+                    onclick="showLayer('2025')">
+                    <label>Deforestasi 2025</label>
+                </div>
+            </div>
+
+            <!-- INFO -->
+            <div class="card">
+                <h2>
+                    <i class="fa-solid fa-circle-info"></i>
+                    Informasi
+                </h2>
+                <div id="infoBox">
+                    <h3>Silakan Pilih Layer</h3>
+                    <p>
+                        Klik layer untuk menampilkan
+                        data deforestasi.
+                    </p>
+                </div>
+            </div>
+
+            <!-- LEGENDA -->
+            <div class="card">
+                <h2>
+                    <i class="fa-solid fa-map"></i>
+                    Legenda
+                </h2>
+                <div class="legend-item">
+                    <span class="color"></span>
+                    Area Deforestasi
+                </div>
+                <div class="legend-item">
+                    <span class="line-legend"></span>
+                    Batas Administrasi Kabupaten
+                </div>
+            </div>
+
+            <!-- CHART -->
+            <div class="card">
+                <h2>
+                    <i class="fa-solid fa-chart-column"></i>
+                    Statistik
+                </h2>
+                <canvas id="chartDeforestasi"></canvas>
+            </div>
+        </div>
+
+        <!-- MAP -->
+        <div id="map"></div>
+    </div>
+
+    <!-- ===================================== -->
+    <!-- LEAFLET -->
+    <!-- ===================================== -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- ===================================== -->
+    <!-- FILE GEOJSON JS -->
+    <!-- ===================================== -->
+    <script src="Admin.js"></script>
+    <script src="Deforestasi_21.js"></script>
+    <script src="Deforestasi_22.js"></script>
+    <script src="Deforestasi_23.js"></script>
+    <script src="Deforestasi_24.js"></script>
+    <script src="Deforestasi_25.js"></script>
+    <script>
+
+        /* ===================================== */
+        /* MAP */
+        /* ===================================== */
+        var map = L.map('map').setView([-1.8,110.3],8);
+
+        /* ===================================== */
+        /* BASEMAP */
+        /* ===================================== */
+        var osm = L.tileLayer(
+            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                attribution:'© OpenStreetMap'
+            }
+        ).addTo(map);
+        var satellite = L.tileLayer(
+            'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+            {
+                attribution:'Google Satellite'
+            }
+        );
+        var dark = L.tileLayer(
+            'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+            {
+                attribution:'Carto'
+            }
+        );
+        var baseMaps = {
+            "OpenStreetMap":osm,
+            "Google Satellite":satellite,
+            "Carto Dark":dark
+        };
+        L.control.layers(baseMaps).addTo(map);
+
+        /* ===================================== */
+        /* SCALE BAR */
+        /* ===================================== */
+        L.control.scale({
+            position:'bottomright',
+            metric:true,
+            imperial:false
+        }).addTo(map);
+
+        /* ===================================== */
+        /* KOORDINAT */
+        /* ===================================== */
+        var koordinat = L.control({
+            position:'bottomleft'
+        });
+        koordinat.onAdd = function(){
+            this._div =
+            L.DomUtil.create('div','koordinat');
+            this.update();
+            return this._div;
+        };
+        koordinat.update = function(latlng){
+            this._div.innerHTML = latlng ?
+            "<b>Koordinat</b><br>" +
+            "Lat : " + latlng.lat.toFixed(5) +
+            "<br>Lon : " +
+            latlng.lng.toFixed(5)
+            :
+            "Gerakkan kursor";
+        };
+        koordinat.addTo(map);
+        map.on('mousemove',function(e){
+            koordinat.update(e.latlng);
+        });
+
+        /* ===================================== */
+        /* ADMIN LAYER */
+        /* ===================================== */
+        var adminLayer = L.geoJSON(Admin,{
+            style:{
+                color:"#000000",
+                weight:2,
+                fillOpacity:0
+            }
+        }).addTo(map);
+
+        /* ===================================== */
+        /* STYLE DEFORESTASI */
+        /* ===================================== */
+        function styleDeforestasi(){
+            return{
+                color:"#fd8d3c",
+                weight:2,
+                fillOpacity:0.7
+            };
+        }
+
+        /* ===================================== */
+        /* GEOJSON LAYER */
+        /* ===================================== */
+        var layer2021 = L.geoJSON(Deforestasi_21,{
+            style:styleDeforestasi,
+            onEachFeature:function(feature,layer){
+                layer.bindPopup(
+                    "<b>Deforestasi 2021</b>"
+                );
+            }
+        });
+        var layer2022 = L.geoJSON(Deforestasi_22,{
+            style:styleDeforestasi,
+            onEachFeature:function(feature,layer){
+                layer.bindPopup(
+                    "<b>Deforestasi 2022</b>"
+                );
+            }
+        });
+        var layer2023 = L.geoJSON(Deforestasi_23,{
+            style:styleDeforestasi,
+            onEachFeature:function(feature,layer){
+                layer.bindPopup(
+                    "<b>Deforestasi 2023</b>"
+                );
+            }
+        });
+        var layer2024 = L.geoJSON(Deforestasi_24,{
+            style:styleDeforestasi,
+            onEachFeature:function(feature,layer){
+                layer.bindPopup(
+                    "<b>Deforestasi 2024</b>"
+                );
+            }
+        });
+        var layer2025 = L.geoJSON(Deforestasi_25,{
+            style:styleDeforestasi,
+            onEachFeature:function(feature,layer){
+                layer.bindPopup(
+                    "<b>Deforestasi 2025</b>"
+                );
+            }
+        });
+
+        /* ===================================== */
+        /* ALL LAYERS */
+        /* ===================================== */
+        var allLayers = {
+            "2021": layer2021,
+            "2022": layer2022,
+            "2023": layer2023,
+            "2024": layer2024,
+            "2025": layer2025
+        };
+
+        /* ===================================== */
+        /* HITUNG LUAS */
+        /* ===================================== */
+        function hitungLuas(layer){
+            var total = 0;
+            layer.eachLayer(function(l){
+                total += parseFloat(
+                    l.feature.properties.luas
+                );
+            })
+            return total;
+        }
+
+        /* ===================================== */
+        /* FORMAT ANGKA */
+        /* ===================================== */
+        function formatAngka(angka){
+            return Number(angka).toLocaleString(
+                'id-ID',
+                {
+                    minimumFractionDigits:3,
+                    maximumFractionDigits:3
+                }
+            );
+        }
+		
+        /* ===================================== */
+        /* SIMPAN LUAS */
+        /* ===================================== */
+        var luasTahunan = {};
+        for(var tahun in allLayers){
+            luasTahunan[tahun] =
+            hitungLuas(allLayers[tahun]);
+        }
+
+        /* ===================================== */
+        /* SHOW LAYER */
+        /* ===================================== */
+        function showLayer(year){
+            map.removeLayer(layer2021);
+            map.removeLayer(layer2022);
+            map.removeLayer(layer2023);
+            map.removeLayer(layer2024);
+            map.removeLayer(layer2025);
+            var selectedLayer =
+            allLayers[year];
+            selectedLayer.addTo(map);
+            var totalLuas =
+            luasTahunan[year];
+            var deskripsi = "";
+            if(year == "2021"){
+                deskripsi =
+                "Pada tahun 2021 terjadi deforestasi kawasan hutan di Kabupaten Ketapang seluas 36.441,29 ha";
+            }
+            else{
+                var tahunSebelum =
+                parseInt(year) - 1;
+                var luasSebelum =
+                luasTahunan[tahunSebelum];
+                var persen =
+                (
+                    (
+                        totalLuas - luasSebelum
+                    )
+                    /
+                    luasSebelum
+                ) * 100;
+                if(persen > 0){
+                    deskripsi =
+                    "Terjadi peningkatan deforestasi sebesar "
+                    +
+                    persen.toFixed(2)
+                    +
+                    "% dibandingkan tahun sebelumnya.";
+                }
+                else{
+                    deskripsi =
+                    "Terjadi penurunan deforestasi sebesar "
+                    +
+                    Math.abs(persen).toFixed(2)
+                    +
+                    "% dibandingkan tahun sebelumnya.";
+                }
+            }
+            document.getElementById(
+                "infoBox"
+            ).innerHTML = `
+                <h3>Deforestasi ${year}</h3>
+                <p>
+                    <b>Luas Deforestasi:</b><br>
+                    ${formatAngka(totalLuas)} ha
+                </p>
+                <p>
+                    <b>Keterangan:</b><br>
+                    ${deskripsi}
+                </p>
+            `;
+        }
+
+        /* ===================================== */
+        /* CHART */
+        /* ===================================== */
+        const ctx =
+        document.getElementById('chartDeforestasi');
+        new Chart(ctx, {
+            type:'bar',
+            data:{
+                labels:[
+                    '2021',
+                    '2022',
+                    '2023',
+                    '2024',
+                    '2025'
+                ],
+                datasets:[{
+                    label:'Luas Deforestasi (Ha)',
+                    data:[
+                        luasTahunan["2021"],
+                        luasTahunan["2022"],
+                        luasTahunan["2023"],
+                        luasTahunan["2024"],
+                        luasTahunan["2025"]
+                    ],
+                    borderWidth:1
+                }]
+            },
+            options:{
+                responsive:true
+            }
+        });
+    </script>
+</body>
+</html>
