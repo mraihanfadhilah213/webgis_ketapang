@@ -257,17 +257,6 @@
     <!-- ===================================== -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-    <!-- ===================================== -->
-    <!-- FILE GEOJSON JS -->
-    <!-- ===================================== -->
-    <script src="webgis_ketapang/Admin.js"></script>
-    <script src="webgis_ketapang/Deforestasi_21.js"></script>
-    <script src="webgis_ketapang/Deforestasi_22.js"></script>
-    <script src="webgis_ketapang/Deforestasi_23.js"></script>
-    <script src="webgis_ketapang/Deforestasi_24.js"></script>
-    <script src="webgis_ketapang/Deforestasi_25.js"></script>
-    <script>
-
         /* ===================================== */
         /* MAP */
         /* ===================================== */
@@ -347,60 +336,81 @@
             }
         }).addTo(map);
 
-        /* ===================================== */
-        /* STYLE DEFORESTASI */
-        /* ===================================== */
-        function styleDeforestasi(){
-            return{
-                color:"#fd8d3c",
-                weight:2,
-                fillOpacity:0.7
-            };
-        }
-
-        /* ===================================== */
-        /* GEOJSON LAYER */
-        /* ===================================== */
-        var layer2021 = L.geoJSON(Deforestasi_21,{
-            style:styleDeforestasi,
-            onEachFeature:function(feature,layer){
-                layer.bindPopup(
-                    "<b>Deforestasi 2021</b>"
-                );
-            }
-        });
-        var layer2022 = L.geoJSON(Deforestasi_22,{
-            style:styleDeforestasi,
-            onEachFeature:function(feature,layer){
-                layer.bindPopup(
-                    "<b>Deforestasi 2022</b>"
-                );
-            }
-        });
-        var layer2023 = L.geoJSON(Deforestasi_23,{
-            style:styleDeforestasi,
-            onEachFeature:function(feature,layer){
-                layer.bindPopup(
-                    "<b>Deforestasi 2023</b>"
-                );
-            }
-        });
-        var layer2024 = L.geoJSON(Deforestasi_24,{
-            style:styleDeforestasi,
-            onEachFeature:function(feature,layer){
-                layer.bindPopup(
-                    "<b>Deforestasi 2024</b>"
-                );
-            }
-        });
-        var layer2025 = L.geoJSON(Deforestasi_25,{
-            style:styleDeforestasi,
-            onEachFeature:function(feature,layer){
-                layer.bindPopup(
-                    "<b>Deforestasi 2025</b>"
-                );
-            }
-        });
+		/* ===================================== */
+		/* STYLE DEFORESTASI */
+		/* ===================================== */
+		function styleDeforestasi(){
+		    return{
+		        color:"#fd8d3c",
+		        weight:2,
+		        fillOpacity:0.7
+		    };
+		}
+		
+		/* ===================================== */
+		/* VARIABLE LAYER */
+		/* ===================================== */
+		var currentLayer = null;
+		
+		/* ===================================== */
+		/* LOAD GEOJSON */
+		/* ===================================== */
+		function showLayer(year){
+		
+		    // hapus layer sebelumnya
+		    if(currentLayer){
+		        map.removeLayer(currentLayer);
+		    }
+		
+		    // URL RAW GITHUB
+		    var url =
+		    "https://raw.githubusercontent.com/mraihanfadhilah213/webgis_ketapang/main/Deforestasi_" +
+		    year.slice(2) +
+		    ".js";
+		
+		    fetch(url)
+		    .then(response => response.text())
+		    .then(data => {
+		
+		        // ubah isi JS menjadi object
+		        eval(data);
+		
+		        // ambil nama variabel
+		        var geojsonData;
+		
+		        if(year == "2021"){
+		            geojsonData = Deforestasi_21;
+		        }
+		        if(year == "2022"){
+		            geojsonData = Deforestasi_22;
+		        }
+		        if(year == "2023"){
+		            geojsonData = Deforestasi_23;
+		        }
+		        if(year == "2024"){
+		            geojsonData = Deforestasi_24;
+		        }
+		        if(year == "2025"){
+		            geojsonData = Deforestasi_25;
+		        }
+		
+		        // tampilkan layer
+		        currentLayer = L.geoJSON(
+		            geojsonData,
+		            {
+		                style:styleDeforestasi,
+		                onEachFeature:function(feature,layer){
+		                    layer.bindPopup(
+		                        "<b>Deforestasi " +
+		                        year +
+		                        "</b>"
+		                    );
+		                }
+		            }
+		        ).addTo(map);
+		
+		    });
+		}
 
         /* ===================================== */
         /* ALL LAYERS */
